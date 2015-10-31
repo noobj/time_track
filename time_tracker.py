@@ -30,6 +30,11 @@ class Tracker:
         filename = "TR" + str(datetime.date.today())
         home = expanduser("~")
 
+        # test weather the TR dir exists or create it 
+        # if not find
+        if not os.path.exists(home + "/TR"):
+            os.makedirs(home + "/TR")
+
         while self.enable:
             task = raw_input("Enter to Start timing:")
             a = datetime.datetime.now()
