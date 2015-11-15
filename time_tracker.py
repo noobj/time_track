@@ -3,6 +3,7 @@ __author__ = 'jjj'
 import time
 import datetime
 from os.path import expanduser
+import os
 
 class Tracker:
 
@@ -49,3 +50,7 @@ class Tracker:
             if input == 'Q' or input == 'q':
                 print "get the fuck out of here"
                 return
+
+if __name__ == "__main__":
+        tracker = Tracker()
+        tracker.start()
