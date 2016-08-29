@@ -38,6 +38,11 @@ class Tracker:
 
         while self.enable:
             task = raw_input("Enter to Start timing:")
+
+            if task == 'Q' or task == 'q':
+                print "get the fuck out of here"
+                return
+
             a = datetime.datetime.now()
             print "Working in %s" %(task)
             input = raw_input()
@@ -46,10 +51,6 @@ class Tracker:
             with open(home + "/TR/" + filename, "a") as f:
                 f.write(task + "   ")
                 self.cal(a, b, f)
-
-            if input == 'Q' or input == 'q':
-                print "get the fuck out of here"
-                return
 
 if __name__ == "__main__":
         tracker = Tracker()
