@@ -45,7 +45,7 @@ class Tracker:
     def cal(self, a, b, fd):
         if fd is not None:
             print a.strftime('%H:%M:%S') + ' - ' + b.strftime('%H:%M:%S')
-            fd.write(a.strftime('%H:%M:%S') + ' - ' + b.strftime('%H:%M:%S') + "\n")
+            fd.write(a.strftime('%H:%M:%S') + '~' + b.strftime('%H:%M:%S') + "\n")
         c = b - a
         print self.strfdelta(c, "Duration {hours}:{minutes}:{seconds}")
         if fd is not None:
@@ -54,7 +54,7 @@ class Tracker:
     def start(self):
         global input
         self.enable = True
-        filename = "TR" + str(datetime.date.today())
+        filename = datetime.date.today().strftime('%Y%m%d')
         home = expanduser("~")
 
         # test weather the TR dir exists or create it 
@@ -77,7 +77,7 @@ class Tracker:
 
             b = datetime.datetime.now()
             with open(home + "/TR/" + filename, "a") as f:
-                f.write(task + "   ")
+                f.write(task + " ")
                 self.cal(a, b, f)
             t1.join()
 
