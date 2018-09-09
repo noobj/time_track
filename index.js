@@ -4,6 +4,7 @@ const {google} = require('googleapis');
 const Q = require('q');
 const moment = require('moment');
 const homedir = require('os').homedir();
+const _ = require('lodash');
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
@@ -91,6 +92,7 @@ function listMajors(auth) {
     // trying to promisify functions
     const batchUpdate = Q.denodeify(sheets.spreadsheets.batchUpdate);
     const sheetGet = Q.denodeify(sheets.spreadsheets.get);
+    const sheetAppend = Q.denodeify(sheets.spreadsheets.values.append);
 
     return sheetGet({spreadsheetId: '1UaD2wxlY0v6Jx0kNSdkWHrv9Wc6W_-hfQpgyQRfpFR0'})
     .then((res) => {
@@ -115,7 +117,7 @@ function listMajors(auth) {
         .then(() => {
             return batchUpdate(request4AddSheet)
             .then((row) => {
-                const values = [["Subject", "起始與結束時間", "Duration"]]; // values for write into sheet
+                const values = [["Subject", "起始與結束時間", "Duration", "Duration(seconds)"]]; // values for write into sheet
                 const newSheetId = row.data.replies[0].addSheet.properties.sheetId;
 
                 const rl = readline.createInterface({
@@ -124,14 +126,24 @@ function listMajors(auth) {
 
                 rl.on('line', (line) => {
                     if (line.startsWith('Duration')) {
-                        const durations = line.split(' ')[1];
-                        values[values.length -1].push(durations);
+                        const durations = line.split(' ');
+                        values[values.length -1].push(durations[1]);
+                        values[values.length -1].push(Number(durations[2]));
                     } else {
                         values.push(line.split(' '));
                     }
                 });
 
                 rl.on('close', (line) => {
+
+                    // filter the index 0 of values and get the subject item for statistics
+                    const subjects = _.uniq(values.filter((v, k) => {
+                        if (k == 0) return false;
+                        return true})
+                    .map((v) => {
+                        return v[0]
+                    }));
+
                     const request4AppendData = {
                         spreadsheetId: '1UaD2wxlY0v6Jx0kNSdkWHrv9Wc6W_-hfQpgyQRfpFR0',
                         range: `${filename}!A1:D5`,
@@ -142,7 +154,42 @@ function listMajors(auth) {
                         }
                     }
 
-                    return sheets.spreadsheets.values.append(request4AppendData);
+                    return sheetAppend(request4AppendData)
+                    .then(() => {
+                        // this phrase is to append the subjects for statistics
+                        const request4Statistics = {
+                            spreadsheetId: '1UaD2wxlY0v6Jx0kNSdkWHrv9Wc6W_-hfQpgyQRfpFR0',
+                            range: `${filename}!E1:E2`,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                majorDimension: 'ROWS',
+                                values: [['=unique(transpose(split(ArrayFormula(concatenate($A2:A&" "))," ")))']]
+                            }
+                        }
+
+                        return sheetAppend(request4Statistics);
+                    })
+                    .then(() => {
+                        // this phrase append sumif to sum the same subjects' seconds
+                        const sumifData = []; // for statistic the sum of same subject
+                        for ( let i = 1; i <= subjects.length ; i++) {
+                            sumifData.push([`=SUMIF(A2:A,E${i},D2:D)`]);
+                        }
+                        const request4Sumif = {
+                            spreadsheetId: '1UaD2wxlY0v6Jx0kNSdkWHrv9Wc6W_-hfQpgyQRfpFR0',
+                            range: `${filename}!F1:F`,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                majorDimension: 'ROWS',
+                                values: sumifData
+                            }
+                        }
+
+                        return sheetAppend(request4Sumif);
+                    })
+                    .catch((err) => {
+                        console.log('The API returned an error: ' + err);
+                    })
                 })
 
                 // the code below use copyandpaste request

@@ -49,7 +49,8 @@ class Tracker:
         c = b - a
         print self.strfdelta(c, "Duration {hours}:{minutes}:{seconds}")
         if fd is not None:
-            fd.write(self.strfdelta(c, "Duration {hours}:{minutes}:{seconds}") + "\n")
+            fd.write(self.strfdelta(c, "Duration {hours}:{minutes}:{seconds} "))
+            fd.write(str(c.seconds) + "\n")
 
     def start(self):
         global input
