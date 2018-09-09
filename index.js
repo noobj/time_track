@@ -205,6 +205,62 @@ function listMajors(auth) {
 
                         return sheetAppend(request4ConvertFormat);
                     })
+                    .then(() => {
+                        // this phrase add statistics chart to the sheet
+                        const request4AddChart = {
+                            spreadsheetId: '1UaD2wxlY0v6Jx0kNSdkWHrv9Wc6W_-hfQpgyQRfpFR0',
+                            resource: {
+                                requests: [{
+                                    addChart: {
+                                        chart: {
+                                            spec: {
+                                                title: 'Statistics Chart',
+                                                pieChart: {
+                                                    legendPosition: 'RIGHT_LEGEND',
+                                                    threeDimensional: 'true',
+                                                    domain: {
+                                                        sourceRange: {
+                                                            sources: [
+                                                                {
+                                                                  sheetId: newSheetId,
+                                                                  startRowIndex: 0,
+                                                                  startColumnIndex: 4,
+                                                                  endColumnIndex: 5
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    series: {
+                                                        sourceRange: {
+                                                            sources: [
+                                                                {
+                                                                    sheetId: newSheetId,
+                                                                    startRowIndex: 0,
+                                                                    startColumnIndex: 5,
+                                                                    endColumnIndex: 6
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            position: {
+                                                overlayPosition: {
+                                                    anchorCell: {
+                                                        sheetId: newSheetId,
+                                                        rowIndex: 0,
+                                                        columnIndex: 7
+                                                    }
+                                                },
+                                            }
+                                        }
+                                    }
+                                }]
+                            }
+                        }
+
+                        return batchUpdate(request4AddChart);
+                    })
                     .catch((err) => {
                         console.log('The API returned an error: ' + err);
                     })
@@ -237,6 +293,8 @@ function listMajors(auth) {
                 //     }
                 // };
                 // return batchUpdate(request4CopyandPaste)
+
+                return newSheetId;
             })
         })
     })
