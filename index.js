@@ -187,6 +187,24 @@ function listMajors(auth) {
 
                         return sheetAppend(request4Sumif);
                     })
+                    .then(() => {
+                        // this phrase append formula to convert seconds to readable time format
+                        const convertFormat = [];
+                        for ( let i = 1; i <= subjects.length ; i++) {
+                            convertFormat.push([`=CONCATENATE(IF(FLOOR(DIVIDE(F${i}, 3600), 1) = 0, "", FLOOR(DIVIDE(F${i}, 3600), 1)), IF(FLOOR(DIVIDE(F${i}, 3600), 1) = 0, "", "H"), FLOOR(DIVIDE(MOD(F${i},3600),60), 1), "M")`]);
+                        }
+                        const request4ConvertFormat = {
+                            spreadsheetId: '1UaD2wxlY0v6Jx0kNSdkWHrv9Wc6W_-hfQpgyQRfpFR0',
+                            range: `${filename}!G1:G`,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                majorDimension: 'ROWS',
+                                values: convertFormat
+                            }
+                        }
+
+                        return sheetAppend(request4ConvertFormat);
+                    })
                     .catch((err) => {
                         console.log('The API returned an error: ' + err);
                     })
